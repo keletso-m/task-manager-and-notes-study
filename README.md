@@ -1,330 +1,205 @@
-# Task Manager API
+# Focus — Personal Study & Task Manager
 
-![CI/CD Pipeline](https://github.com/YOUR_USERNAME/task-manager-api/workflows/CI/CD%20Pipeline/badge.svg)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+> A personal desktop productivity app built on top of a Flask + SQLite backend.  
+> No auth. No cloud. Just yours.
 
-A secure, production-ready REST API for task management built with Flask. This project demonstrates modern DevOps practices including containerization, automated testing, security scanning, and CI/CD pipelines.
+Built by Keletso Monyamane · MIT License · Python 3.11+ · Flask · SQLite · CustomTkinter
+
+---
+
+## What Is Focus?
+
+Focus is a desktop app for Linux that replaces scattered paper notes and forgotten tasks with one place to think, plan, and study. It lives in your system tray, fires desktop notifications, and keeps everything stored locally on your machine.
+
+It started as a Task Manager API and was rebuilt into a personal tool — the REST backend is still there under the hood, but the frontend is now a native desktop app.
+
+---
 
 ## Features
 
-- **Authentication & Authorization**
-  - User registration with password hashing (Werkzeug)
-  - JWT-based authentication
-  - Protected endpoints with token validation
+| Feature | Status |
+|---|---|
+| Task checklist — tick off and done | Done |
+| Long-term goals (with target dates) | Done |
+| Day-to-day tasks | Done |
+| Future-dated tasks and reminders | Done |
+| Notes with headings (like a mini doc) | Done |
+| Pomodoro timer | Done |
+| Desktop notifications (Linux native) | Done |
+| System tray icon | Done |
+| SQLite — all data stays on your machine | Done |
+| Recurring tasks | Planned |
+| Colour-coded categories / tags | Planned |
+| Export notes to PDF | Planned |
 
-- **Task Management**
-  - Create, read, update, and delete tasks (CRUD)
-  - User-specific task isolation
-  - Task completion tracking
+---
 
-- **Security First**
-  - Dependency scanning with Snyk
-  - Container vulnerability scanning with Trivy
-  - Static code analysis with CodeQL
-  - Secure password storage
-  - JWT token expiration
+## Tech Stack
 
-- **DevOps & CI/CD**
-  - Automated testing with pytest
-  - Code coverage reporting
-  - Docker containerization
-  - GitHub Actions workflows
-  - Multi-stage security gates
+| Layer | Technology |
+|---|---|
+| Backend | Flask 3.0 · Python 3.11+ |
+| Database | SQLite (local, no setup needed) |
+| Desktop UI | CustomTkinter |
+| System Tray | pystray + Pillow |
+| Notifications | plyer + `notify-send` (Linux) |
+| CI/CD | GitHub Actions |
 
-## Quick Start
+No Docker. No JWT. No login. This app is for one person — you.
 
-### Prerequisites
+---
 
-- Python 3.11+
-- Docker (optional)
-- Git
+## Quickstart
 
-### Local Development
+### 1. Clone and set up
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/task-manager-api.git
-   cd task-manager-api
-   ```
-
-2. **Set up virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Run the application**
-   ```bash
-   python app/app.py
-   ```
-
-   The API will be available at `http://localhost:5000`
-
-5. **Run tests**
-   ```bash
-   pytest tests/ -v
-   ```
-
-### Docker Deployment
-
-1. **Build the image**
-   ```bash
-   docker build -t task-manager-api .
-   ```
-
-2. **Run the container**
-   ```bash
-   docker run -p 5000:5000 task-manager-api
-   ```
-
-## API Documentation
-
-### Authentication Endpoints
-
-#### Register a new user
-```http
-POST /api/register
-Content-Type: application/json
-
-{
-  "username": "john_doe",
-  "password": "secure_password123"
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "message": "User registered successfully",
-  "user_id": 1,
-  "username": "john_doe"
-}
-```
-
-#### Login
-```http
-POST /api/login
-Content-Type: application/json
-
-{
-  "username": "john_doe",
-  "password": "secure_password123"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "message": "Login successful",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "username": "john_doe"
-}
-```
-
-### Task Endpoints
-
-> **Note:** All task endpoints require authentication. Include the JWT token in the Authorization header:
-> ```
-> Authorization: Bearer YOUR_JWT_TOKEN
-> ```
-
-#### Get all tasks
-```http
-GET /api/tasks
-Authorization: Bearer YOUR_JWT_TOKEN
-```
-
-**Response (200 OK):**
-```json
-{
-  "tasks": [
-    {
-      "id": 1,
-      "title": "Complete project documentation",
-      "description": "Write README and API docs",
-      "completed": false,
-      "created_at": "2024-01-15 10:30:00"
-    }
-  ]
-}
-```
-
-#### Create a task
-```http
-POST /api/tasks
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-
-{
-  "title": "New task",
-  "description": "Task description (optional)"
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "message": "Task created successfully",
-  "task_id": 1,
-  "title": "New task"
-}
-```
-
-#### Update a task
-```http
-PUT /api/tasks/{task_id}
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-
-{
-  "title": "Updated title",
-  "description": "Updated description",
-  "completed": true
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "message": "Task updated successfully"
-}
-```
-
-#### Delete a task
-```http
-DELETE /api/tasks/{task_id}
-Authorization: Bearer YOUR_JWT_TOKEN
-```
-
-**Response (200 OK):**
-```json
-{
-  "message": "Task deleted successfully"
-}
-```
-
-### Health Check
-
-```http
-GET /health
-```
-
-**Response (200 OK):**
-```json
-{
-  "status": "healthy"
-}
-```
-
-## Testing
-
-The project includes comprehensive unit tests covering:
-- User registration and authentication
-- JWT token handling
-- Task CRUD operations
-- Error handling and edge cases
-
-**Run all tests:**
 ```bash
-pytest tests/ -v
+git clone https://github.com/keletso-m/task-manager-api.git
+cd task-manager-api
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
-**Run with coverage:**
+### 2. Initialise the database
+
 ```bash
-pytest tests/ --cov=app --cov-report=html
+python scripts/init_db.py
 ```
 
-## Security
+### 3. Start the backend
 
-This project implements multiple security layers:
+```bash
+python app/app.py
+```
 
-1. **Dependency Scanning** - Snyk monitors for vulnerable dependencies
-2. **Container Scanning** - Trivy scans Docker images for CVEs
-3. **Static Analysis** - CodeQL analyzes code for security issues
-4. **Secure Authentication** - Password hashing with Werkzeug, JWT tokens
-5. **Security Headers** - CORS and other protective headers (to be added)
+Runs on `http://localhost:5000` — the desktop app talks to this automatically.
 
-### Security Scan Results
+### 4. Launch the desktop app
 
-Security scans run automatically on every push via GitHub Actions. Check the Actions tab for results.
+```bash
+python desktop/main.py
+```
+
+The app opens and an icon appears in your system tray. You can close the window and reopen it from the tray anytime.
+
+---
+
+## How It Works
+
+### Tasks
+
+Tasks come in two types:
+
+- **Day-to-day** — things to get done today or this week
+- **Long-term goals** — bigger targets with a future due date
+
+Both types can be ticked off. Completed tasks move to a "Done" section so you still see the progress.
+
+You can set any task to a future date and Focus will send you a desktop notification on that day as a reminder.
+
+### Notes
+
+Notes support headings so you can structure your thinking — like a lightweight doc. Each note has a title and free-form body. Good for:
+- Study notes per subject
+- Summaries and revision
+- Anything you'd normally write on paper
+
+### Pomodoro Timer
+
+A built-in 25/5 Pomodoro timer. When a session ends, a desktop notification fires so you don't have to watch the clock.
+
+You can customise work and break durations in the settings panel.
+
+### Notifications
+
+Focus uses Linux native notifications (`notify-send` + `plyer`) to send alerts for:
+- Pomodoro session end / break end
+- Task due today
+- Future-dated task reminders
+
+---
 
 ## Project Structure
 
 ```
-task-manager-api/
+focus/
 ├── app/
-│   └── app.py              # Main Flask application
+│   ├── app.py                  # Flask backend (no auth)
+│   └── routes/
+│       ├── tasks.py            # GET, POST, PUT, DELETE /api/tasks
+│       └── notes.py            # GET, POST, PUT, DELETE /api/notes
+├── desktop/
+│   ├── main.py                 # Entry point — starts backend + launches window
+│   ├── window.py               # Main app window (Tasks, Notes, Pomodoro tabs)
+│   ├── tray.py                 # System tray icon + right-click menu
+│   └── notifier.py             # Desktop notification helper
+├── scripts/
+│   └── init_db.py              # Creates tables on first run
 ├── tests/
-│   └── test_app.py         # Unit tests
-├── .github/
-│   └── workflows/
-│       └── ci-cd.yml       # GitHub Actions workflow
-├── Dockerfile              # Container definition
-├── .dockerignore           # Docker ignore rules
-├── .gitignore              # Git ignore rules
-├── requirements.txt        # Python dependencies
-└── README.md               # This file
+│   └── test_app.py             # Unit tests
+├── requirements.txt
+└── README.md
 ```
-
-## Technology Stack
-
-- **Backend Framework:** Flask 3.0
-- **Authentication:** PyJWT 2.8
-- **Database:** SQLite (easily replaceable with PostgreSQL)
-- **Testing:** pytest, pytest-cov
-- **Containerization:** Docker
-- **CI/CD:** GitHub Actions
-- **Security Scanning:** Snyk, Trivy, CodeQL
-
-## Future Enhancements
-
-- [ ] Migrate to PostgreSQL for production
-- [ ] Add Prometheus metrics endpoint
-- [ ] Implement Loki for log aggregation
-- [ ] Create Grafana dashboards
-- [ ] Set up ELK/OpenSearch for SIEM
-- [ ] Add API rate limiting
-- [ ] Implement refresh tokens
-- [ ] Add task categories and tags
-- [ ] Email notifications
-- [ ] Swagger/OpenAPI documentation
-
-## Environment Variables
-
-Create a `.env` file for production:
-
-```bash
-SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///tasks.db  # or postgresql://...
-FLASK_ENV=production
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Author
-
-**keletso Monyamane**
-
-## Acknowledgments
-
-- Built as a learning project for DevOps and security best practices
-- Inspired by modern cloud-native application patterns
 
 ---
 
-⭐ **Star this repo if you find it useful!**
+## API (Internal)
+
+The Flask backend is what stores and serves all your data. You don't need to touch it directly — the desktop app handles everything — but it's there if you want to extend it.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /api/tasks | Get all tasks |
+| POST | /api/tasks | Create a task |
+| PUT | /api/tasks/{id} | Update / tick off a task |
+| DELETE | /api/tasks/{id} | Delete a task |
+| GET | /api/notes | Get all notes |
+| POST | /api/notes | Create a note |
+| PUT | /api/notes/{id} | Update a note |
+| DELETE | /api/notes/{id} | Delete a note |
+| GET | /health | Liveness check |
+
+---
+
+## Database Schema
+
+```sql
+-- Tasks
+CREATE TABLE tasks (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    title       TEXT NOT NULL,
+    description TEXT,
+    task_type   TEXT DEFAULT 'daily',   -- 'daily' or 'goal'
+    completed   BOOLEAN DEFAULT 0,
+    due_date    DATE,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Notes
+CREATE TABLE notes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT NOT NULL,
+    body       TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## Roadmap
+
+- [ ] Recurring tasks (daily / weekly)
+- [ ] Subject tags for notes
+- [ ] Export notes to PDF
+- [ ] Colour themes
+- [ ] Search across tasks and notes
+
+---
+
+## License
+
+MIT — use it, break it, make it yours.
+
+Built by Keletso Monyamane — [github.com/keletso-m](https://github.com/keletso-m)
