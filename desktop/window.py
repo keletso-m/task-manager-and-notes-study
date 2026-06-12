@@ -202,8 +202,161 @@ class TasksTab(ctk.CTkFrame):
     def _delete(self, task):
         api_delete(f"/tasks/{task['id']}")
         self.load_tasks()
-        
 
+# notes Tab 
+class NotesTab(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(parent, fg_color=DARK_BG)
+        self.current_note_id = None
+        self._autosave_job = None
+        self._build()
+        self.load_notes()
+ 
+    def _build(self):
+        # Left panel — note list
+        left = ctk.CTkFrame(self, fg_color=PANEL_BG, corner_radius=10, width=220)
+        left.pack(side="left", fill="y", padx=(16, 8), pady=16)
+        left.pack_propagate(False)
+ 
+        ctk.CTkLabel(
+            left, text="Notes", font=("Helvetica", 18, "bold"), text_color=TEXT_MAIN
+        ).pack(padx=12, pady=(12, 8), anchor="w")
+ 
+        # Search
+        self.search_var = ctk.StringVar()
+        self.search_var.trace_add("write", lambda *_: self.load_notes())
+        ctk.CTkEntry(
+            left, placeholder_text="Search...",
+            textvariable=self.search_var,
+            fg_color=CARD_BG, border_color=CARD_BG,
+            text_color=TEXT_MAIN, height=34
+        ).pack(fill="x", padx=12, pady=(0, 8))
+ 
+        # New note button
+        ctk.CTkButton(
+            left, text="+ New note", height=34,
+            fg_color=ACCENT, hover_color="#c73652",
+            command=self.new_note
+        ).pack(fill="x", padx=12, pady=(0, 8))
+ 
+        # Note list
+        self.note_list = ctk.CTkScrollableFrame(left, fg_color="transparent")
+        self.note_list.pack(fill="both", expand=True, padx=4, pady=(0, 8))
+ 
+        # Right panel — editor
+        right = ctk.CTkFrame(self, fg_color=PANEL_BG, corner_radius=10)
+        right.pack(side="left", fill="both", expand=True, padx=(0, 16), pady=16)
+ 
+        # Title input
+        self.note_title = ctk.CTkEntry(
+            right, placeholder_text="Note title...",
+            fg_color=CARD_BG, border_color=CARD_BG,
+            text_color=TEXT_MAIN, font=("Helvetica", 16, "bold"), height=42
+        )
+        self.note_title.pack(fill="x", padx=16, pady=(16, 8))
+        self.note_title.bind("<KeyRelease>", self._on_edit)
+ 
+        # Heading hint
+        ctk.CTkLabel(
+            right,
+            text="Tip: use # Heading  ## Sub heading  ### Smaller heading",
+            font=("Helvetica", 11), text_color=TEXT_DIM
+        ).pack(anchor="w", padx=16, pady=(0, 4))
+ 
+        # Body editor
+        self.note_body = ctk.CTkTextbox(
+            right, fg_color=CARD_BG, text_color=TEXT_MAIN,
+            font=("Helvetica", 13), wrap="word",
+            border_width=0, corner_radius=8
+        )
+        self.note_body.pack(fill="both", expand=True, padx=16, pady=(0, 8))
+        self.note_body.bind("<KeyRelease>", self._on_edit)
+ 
+        # Status bar
+        self.status_label = ctk.CTkLabel(
+            right, text="", font=("Helvetica", 11), text_color=TEXT_DIM
+        )
+        self.status_label.pack(anchor="e", padx=16, pady=(0, 12))
+ 
+        # Delete button
+        ctk.CTkButton(
+            right, text="Delete note", width=110, height=30,
+            fg_color="transparent", hover_color=PANEL_BG,
+            text_color=TEXT_DIM, border_width=1, border_color=TEXT_DIM,
+            command=self.delete_note
+        ).pack(anchor="e", padx=16, pady=(0, 12))
+ 
+    def load_notes(self):
+        for w in self.note_list.winfo_children():
+            w.destroy()
+ 
+        q = self.search_var.get().strip()
+        data = api_get("/notes", params={"q": q} if q else None)
+        if not data:
+            return
+ 
+        for note in data["notes"]:
+            self._note_item(note)
+ 
+    def _note_item(self, note):
+        is_active = note["id"] == self.current_note_id
+        btn = ctk.CTkButton(
+            self.note_list,
+            text=note["title"],
+            anchor="w",
+            height=36,
+            fg_color=ACCENT if is_active else "transparent",
+            hover_color=CARD_BG,
+            text_color=TEXT_MAIN,
+            font=("Helvetica", 13),
+            command=lambda n=note: self.open_note(n["id"])
+        )
+        btn.pack(fill="x", pady=2)
+ 
+    def open_note(self, note_id):
+        data = api_get(f"/notes/{note_id}")
+        if not data:
+            return
+        self.current_note_id = note_id
+        self.note_title.delete(0, "end")
+        self.note_title.insert(0, data["title"])
+        self.note_body.delete("1.0", "end")
+        self.note_body.insert("1.0", data["body"] or "")
+        self.status_label.configure(text="Saved")
+        self.load_notes()
+ 
+    def new_note(self):
+        result = api_post("/notes", {"title": "Untitled", "body": ""})
+        if result and "note_id" in result:
+            self.load_notes()
+            self.open_note(result["note_id"])
+ 
+    def _on_edit(self, event=None):
+        # Debounce — save 1.5s after the user stops typing
+        if self._autosave_job:
+            self.after_cancel(self._autosave_job)
+        self._autosave_job = self.after(1500, self._autosave)
+        self.status_label.configure(text="Unsaved...")
+ 
+    def _autosave(self):
+        if not self.current_note_id:
+            return
+        title = self.note_title.get().strip() or "Untitled"
+        body  = self.note_body.get("1.0", "end").strip()
+        api_put(f"/notes/{self.current_note_id}", {"title": title, "body": body})
+        self.status_label.configure(text=f"Saved · {datetime.now().strftime('%H:%M')}")
+        self.load_notes()
+ 
+    def delete_note(self):
+        if not self.current_note_id:
+            return
+        api_delete(f"/notes/{self.current_note_id}")
+        self.current_note_id = None
+        self.note_title.delete(0, "end")
+        self.note_body.delete("1.0", "end")
+        self.status_label.configure(text="")
+        self.load_notes()
+ 
 
 if __name__ == "__main__":
     app = FocusApp()
