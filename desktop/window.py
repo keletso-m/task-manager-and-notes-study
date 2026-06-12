@@ -505,6 +505,65 @@ class PomodoroTab(ctk.CTkFrame):
             self.reset()
         except ValueError:
             pass
+# main window
+class FocusApp(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        self.title("Focus")
+        self.geometry("960x640")
+        self.minsize(800, 560)
+        self.configure(fg_color=DARK_BG)
+        self._build()
+ 
+    def _build(self):
+        # Sidebar
+        sidebar = ctk.CTkFrame(self, fg_color=PANEL_BG, width=60, corner_radius=0)
+        sidebar.pack(side="left", fill="y")
+        sidebar.pack_propagate(False)
+ 
+        ctk.CTkLabel(
+            sidebar, text="F", font=("Helvetica", 22, "bold"), text_color=ACCENT
+        ).pack(pady=(20, 32))
+ 
+        self.tab_buttons = []
+        tabs = [("✓", "Tasks"), ("📝", "Notes"), ("🍅", "Pomodoro")]
+        self.tab_frames = {}
+ 
+        content = ctk.CTkFrame(self, fg_color=DARK_BG, corner_radius=0)
+        content.pack(side="left", fill="both", expand=True)
+ 
+        # Build all tab frames
+        self.tab_frames["Tasks"]    = TasksTab(content)
+        self.tab_frames["Notes"]    = NotesTab(content)
+        self.tab_frames["Pomodoro"] = PomodoroTab(content)
+ 
+        for icon, name in tabs:
+            btn = ctk.CTkButton(
+                sidebar,
+                text=icon,
+                width=48, height=48,
+                fg_color="transparent",
+                hover_color=CARD_BG,
+                text_color=TEXT_MAIN,
+                font=("Helvetica", 20),
+                command=lambda n=name: self.show_tab(n)
+            )
+            btn.pack(pady=4)
+            self.tab_buttons.append((name, btn))
+ 
+        self.show_tab("Tasks")
+ 
+    def show_tab(self, name):
+        for n, frame in self.tab_frames.items():
+            frame.pack_forget()
+        self.tab_frames[name].pack(fill="both", expand=True)
+ 
+        for n, btn in self.tab_buttons:
+            btn.configure(fg_color=ACCENT if n == name else "transparent")
+ 
+    def on_close(self):
+        # Hide to tray instead of quitting
+        self.withdraw()
  
 
  
