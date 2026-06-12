@@ -356,6 +356,157 @@ class NotesTab(ctk.CTkFrame):
         self.note_body.delete("1.0", "end")
         self.status_label.configure(text="")
         self.load_notes()
+# pomodoro Tab
+
+class PomodoroTab(ctk.CTkFrame):
+    WORK_MINS  = 25
+    BREAK_MINS = 5
+ 
+    def __init__(self, parent):
+        super().__init__(parent, fg_color=DARK_BG)
+        self._seconds_left = self.WORK_MINS * 60
+        self._running = False
+        self._is_break = False
+        self._job = None
+        self._build()
+ 
+    def _build(self):
+        # Centre everything
+        centre = ctk.CTkFrame(self, fg_color="transparent")
+        centre.place(relx=0.5, rely=0.5, anchor="center")
+ 
+        # Mode label
+        self.mode_label = ctk.CTkLabel(
+            centre, text="Focus session",
+            font=("Helvetica", 18), text_color=TEXT_DIM
+        )
+        self.mode_label.pack(pady=(0, 8))
+ 
+        # Big timer
+        self.timer_label = ctk.CTkLabel(
+            centre, text=self._fmt(self._seconds_left),
+            font=("Helvetica", 80, "bold"), text_color=TEXT_MAIN
+        )
+        self.timer_label.pack()
+ 
+        # Progress bar
+        self.progress = ctk.CTkProgressBar(
+            centre, width=320, height=6,
+            fg_color=CARD_BG, progress_color=ACCENT
+        )
+        self.progress.set(1.0)
+        self.progress.pack(pady=20)
+ 
+        # Buttons
+        btn_row = ctk.CTkFrame(centre, fg_color="transparent")
+        btn_row.pack()
+ 
+        self.start_btn = ctk.CTkButton(
+            btn_row, text="Start", width=110, height=42,
+            fg_color=ACCENT, hover_color="#c73652",
+            font=("Helvetica", 15, "bold"),
+            command=self.toggle
+        )
+        self.start_btn.pack(side="left", padx=8)
+ 
+        ctk.CTkButton(
+            btn_row, text="Reset", width=90, height=42,
+            fg_color=CARD_BG, hover_color=PANEL_BG,
+            text_color=TEXT_MAIN,
+            command=self.reset
+        ).pack(side="left", padx=8)
+ 
+        # Custom durations
+        settings = ctk.CTkFrame(centre, fg_color=PANEL_BG, corner_radius=10)
+        settings.pack(pady=32, padx=20, fill="x")
+ 
+        ctk.CTkLabel(
+            settings, text="Customise", font=("Helvetica", 13), text_color=TEXT_DIM
+        ).grid(row=0, column=0, columnspan=4, pady=(12, 4))
+ 
+        ctk.CTkLabel(settings, text="Work (min)", text_color=TEXT_DIM,
+                     font=("Helvetica", 12)).grid(row=1, column=0, padx=12, pady=8)
+        self.work_var = ctk.StringVar(value=str(self.WORK_MINS))
+        ctk.CTkEntry(settings, textvariable=self.work_var, width=56,
+                     fg_color=CARD_BG, text_color=TEXT_MAIN,
+                     border_color=CARD_BG).grid(row=1, column=1, padx=4)
+ 
+        ctk.CTkLabel(settings, text="Break (min)", text_color=TEXT_DIM,
+                     font=("Helvetica", 12)).grid(row=1, column=2, padx=12)
+        self.break_var = ctk.StringVar(value=str(self.BREAK_MINS))
+        ctk.CTkEntry(settings, textvariable=self.break_var, width=56,
+                     fg_color=CARD_BG, text_color=TEXT_MAIN,
+                     border_color=CARD_BG).grid(row=1, column=3, padx=(4, 12))
+ 
+        ctk.CTkButton(
+            settings, text="Apply", height=30,
+            fg_color=ACCENT, hover_color="#c73652",
+            command=self._apply_settings
+        ).grid(row=2, column=0, columnspan=4, pady=(4, 12), padx=20, sticky="ew")
+ 
+    def _fmt(self, secs):
+        m, s = divmod(secs, 60)
+        return f"{m:02d}:{s:02d}"
+ 
+    def toggle(self):
+        if self._running:
+            self._running = False
+            self.start_btn.configure(text="Resume")
+            if self._job:
+                self.after_cancel(self._job)
+        else:
+            self._running = True
+            self.start_btn.configure(text="Pause")
+            self._tick()
+ 
+    def _tick(self):
+        if not self._running:
+            return
+        if self._seconds_left <= 0:
+            self._session_done()
+            return
+        self._seconds_left -= 1
+        self.timer_label.configure(text=self._fmt(self._seconds_left))
+        total = (self.BREAK_MINS if self._is_break else self.WORK_MINS) * 60
+        self.progress.set(self._seconds_left / total)
+        self._job = self.after(1000, self._tick)
+ 
+    def _session_done(self):
+        self._running = False
+        if self._is_break:
+            notify("Focus ☕", "Break over — back to work!")
+            self._is_break = False
+            self._seconds_left = self.WORK_MINS * 60
+            self.mode_label.configure(text="Focus session")
+        else:
+            notify("Focus 🍅", "Session done — take a break!")
+            self._is_break = True
+            self._seconds_left = self.BREAK_MINS * 60
+            self.mode_label.configure(text="Break time")
+        self.start_btn.configure(text="Start")
+        self.timer_label.configure(text=self._fmt(self._seconds_left))
+        self.progress.set(1.0)
+ 
+    def reset(self):
+        self._running = False
+        self._is_break = False
+        if self._job:
+            self.after_cancel(self._job)
+        self._seconds_left = self.WORK_MINS * 60
+        self.timer_label.configure(text=self._fmt(self._seconds_left))
+        self.mode_label.configure(text="Focus session")
+        self.start_btn.configure(text="Start")
+        self.progress.set(1.0)
+ 
+    def _apply_settings(self):
+        try:
+            self.WORK_MINS  = int(self.work_var.get())
+            self.BREAK_MINS = int(self.break_var.get())
+            self.reset()
+        except ValueError:
+            pass
+ 
+
  
 
 if __name__ == "__main__":
