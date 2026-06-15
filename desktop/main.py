@@ -33,6 +33,7 @@ def wait_for_backend(retries=20, delay=0.3):
         try:
             requests.get("http://localhost:5000/health", timeout=1)
             return True
+        
         except Exception:
             time.sleep(delay)
     return False
