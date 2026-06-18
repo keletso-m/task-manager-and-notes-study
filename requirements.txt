@@ -1,6 +1,7 @@
 # Backend
 flask>=3.0
 flask-cors>=4.
+requests>=2.31
 
 # Desktop UI
 customtkinter>=5.2
