@@ -1,4 +1,4 @@
-# Focus — Personal Study & Task Manager
+# Focus Personal Study & Task Manager
 
 > A personal desktop productivity app built on top of a Flask + SQLite backend.  
 > No auth. No cloud. Just yours.
@@ -11,7 +11,7 @@ Built by Keletso Monyamane · MIT License · Python 3.11+ · Flask · SQLite · 
 
 Focus is a desktop app for Linux that replaces scattered paper notes and forgotten tasks with one place to think, plan, and study. It lives in your system tray, fires desktop notifications, and keeps everything stored locally on your machine.
 
-It started as a Task Manager API and was rebuilt into a personal tool — the REST backend is still there under the hood, but the frontend is now a native desktop app.
+It started as a Task Manager API and was rebuilt into a personal tool the REST backend is still there under the hood, but the frontend is now a native desktop app.
 
 ---
 
@@ -45,7 +45,6 @@ It started as a Task Manager API and was rebuilt into a personal tool — the RE
 | Notifications | plyer + `notify-send` (Linux) |
 | CI/CD | GitHub Actions |
 
-No Docker. No JWT. No login. This app is for one person — you.
 
 ---
 
@@ -100,14 +99,14 @@ You can set any task to a future date and Focus will send you a desktop notifica
 
 ### Notes
 
-Notes support headings so you can structure your thinking — like a lightweight doc. Each note has a title and free-form body. Good for:
+Notes support headings so you can structure your thinking like a lightweight doc. Each note has a title and free-form body. Good for:
 - Study notes per subject
 - Summaries and revision
 - Anything you'd normally write on paper
 
 ### Pomodoro Timer
 
-A built-in 25/5 Pomodoro timer. When a session ends, a desktop notification fires so you don't have to watch the clock.
+A built-in custom Pomodoro timer. When a session ends, a desktop notification fires so you don't have to watch the clock.
 
 You can customise work and break durations in the settings panel.
 
@@ -146,7 +145,7 @@ focus/
 
 ## API (Internal)
 
-The Flask backend is what stores and serves all your data. You don't need to touch it directly — the desktop app handles everything — but it's there if you want to extend it.
+The Flask backend is what stores and serves all the data. You don't need to touch it directly the desktop app handles everything but it's there if you want to extend it.
 
 | Method | Endpoint | Description |
 |---|---|---|
