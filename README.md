@@ -19,11 +19,11 @@ It started as a Task Manager API and was rebuilt into a personal tool the REST b
 
 | Feature | Status |
 |---|---|
-| Task checklist — tick off and done | Done |
+| Task checklist tick off and done | Done |
 | Long-term goals (with target dates) | Done |
 | Day-to-day tasks | Done |
 | Future-dated tasks and reminders | Done |
-| Notes with headings (like a mini doc) | Done |
+| Notes with headings | Done |
 | Pomodoro timer | Done |
 | Desktop notifications (Linux native) | Done |
 | System tray icon | Done |
